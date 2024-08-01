@@ -11,3 +11,11 @@ ul li {
     overflow: hidden;
     border-radius: 20px;
   }
+  .nominee-pic {
+    width: 60px;
+    height: 60;
+    position: relative;
+    overflow: hidden;
+    border-radius: 45px;
+  }
+  ul.nav a:hover { background-color: rgb(145, 199, 199) !important; }
