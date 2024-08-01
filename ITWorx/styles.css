@@ -1,0 +1,13 @@
+ul li {
+    margin-right: 10px;
+}
+.nav-item:hover {
+    box-shadow: 0 0 11px rgba(33,33,33,.2); 
+  }
+  .profile-pic {
+    width: 35px;
+    height: 35px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+  }
