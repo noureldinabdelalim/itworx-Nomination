@@ -10,6 +10,7 @@ import NavAdmin from './components/navadmin';
 import SideNavAdmin from './components/sidenavadmin';
 
 import Adminnnnn from './adminnnnnn'; // Import the Adminnnnn component
+import voteEmp from './voteemp';
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -18,7 +19,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/admin" exact element={<Adminnnnn />}/>
-          
+        <Route path="/voteEmp"  exact element={<voteEmp />}/>
         
       </Routes>
     </BrowserRouter>
