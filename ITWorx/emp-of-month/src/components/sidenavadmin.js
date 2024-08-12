@@ -18,7 +18,7 @@ const SideNavAdmin = () => {
         <a
           className="nav-link active text-black fw-bold border-bottom border-1 border-dark"
           aria-current="page"
-          href="adminNominationsPage.html"
+          href="#"
         >
           Nominations
         </a>
@@ -26,7 +26,7 @@ const SideNavAdmin = () => {
       <li className="nav-item">
         <a
           className="nav-link text-black fw-bold border-bottom border-1 border-dark"
-          href="#"
+          href="localhost:3000/votes"
         >
           Voting
         </a>
@@ -34,7 +34,7 @@ const SideNavAdmin = () => {
   <li class="nav-item">
     <a
       class="nav-link text-black fw-bold border-bottom border-1 border-dark"
-      href="#"
+      href=""
       >Results</a
     >
   </li>
