@@ -1,15 +1,12 @@
 import { useEffect } from "react";
 import NavAdmin from "./components/navadmin";
 import SideNavAdmin from "./components/sidenavadmin";
-
 export function Results() {
     useEffect(()=>{
         document.title = "itworx | resuts";
     },[]);
     return (
-
       <>
-        
         <div style={{ backgroundColor: '#ab2228' }}>
           <NavAdmin style={{ width: '100vw' }} />
   
@@ -70,22 +67,6 @@ export function Results() {
                       </li>
                     ))}
                   </ul>
-                </div>
-                <div className="col-md-4 d-flex justify-content-end">
-                  <nav className="nav flex-column">
-                    <a className="nav-link active" aria-current="page" href="#">
-                      Voting
-                    </a>
-                    <a className="nav-link" href="#">
-                      Nominees
-                    </a>
-                    <a className="nav-link" href="#">
-                      Winner
-                    </a>
-                    <a className="nav-link" href="#">
-                      Settings
-                    </a>
-                  </nav>
                 </div>
               </div>
               <div className="d-flex justify-content-end mt-3">
