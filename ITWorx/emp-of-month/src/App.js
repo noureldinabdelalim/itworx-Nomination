@@ -13,6 +13,8 @@ import Resultss from './results';
 
 import Adminnnnn from './adminHome'; // Import the Adminnnnn component
 import Login from './login';
+import EmpHome from './empHome';
+import AdminNomin from './adminNominations'
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -23,7 +25,8 @@ function App() {
         <Route path="/admin" exact element={<Adminnnnn />} />
         <Route path="/voteemp" exact element={<VoteEmp />} />
         <Route path="/results" exact element={<Resultss />} />
-          
+        <Route path="/emp" exact element={<EmpHome />}/>
+        <Route path="/adminNom" exact element={<AdminNomin />}/>
         <Route path="/login" exact element={<Login />}/>
         
       </Routes>
