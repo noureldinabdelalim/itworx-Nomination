@@ -10,7 +10,8 @@ import NavAdmin from './components/navadmin';
 import SideNavAdmin from './components/sidenavadmin';
 
 
-function Appppp() {
+function Appppp()
+{
   return (
     <div  style={{ backgroundColor: '#ab2228' }}>
       <NavAdmin style={{ width: '100vw' }}></NavAdmin>

@@ -1,8 +1,8 @@
 import NavEmp from "./components/navemp";
-
-const voteEmp = () => {
+function voteEmp (){
     return (
         <>
+        <title>itworx |vote</title>
         <NavEmp></NavEmp>
         <main className="container mt-4">
             <h2 style={{ paddingTop: '50px' }}>Employee of The Month</h2>
@@ -46,14 +46,13 @@ const voteEmp = () => {
         </>
     );
   };
-  
-  // Sample data for nominees and prizes
+
   const nominees = [
-    { id: 1, name: 'John Doe', votes: 25, image: 'IMG_5739.JPG' },
-    { id: 2, name: 'Jane Smith', votes: 18, image: 'IMG_5739.JPG' },
-    { id: 3, name: 'Robert Johnson', votes: 12, image: 'IMG_5739.JPG' },
-    { id: 4, name: 'Robert Parks', votes: 7, image: 'IMG_5739.JPG' },
-    { id: 5, name: 'Alice Smith', votes: 5, image: 'IMG_5739.JPG' },
+    { id: 1, name: 'John Doe', votes: 25, image: 'IMG_5739.JPG'},
+     { id: 2, name: 'Jane Smith', votes: 18, image: 'IMG_5739.JPG' },
+     { id: 3, name: 'Robert Johnson', votes: 12, image: 'IMG_5739.JPG' },
+     { id: 4, name: 'Robert Parks', votes: 7, image: 'IMG_5739.JPG' },
+     { id: 5, name: 'Alice Smith', votes: 5, image: 'IMG_5739.JPG' },
   ];
   
   const prizes = [

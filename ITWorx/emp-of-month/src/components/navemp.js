@@ -1,3 +1,6 @@
+import React from 'react';
+import logo from './logo.jpeg';
+import profilePic from './IMG_5739.JPG';
 const NavEmp = () => {
     return (
       <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom" data-bs-theme="light">
@@ -46,7 +49,7 @@ const NavEmp = () => {
               </li>
               <li className="nav-item">
                 <a className="nav-link" href="#">
-                  <img src="IMG_5739.JPG" className="profile-pic" alt="profile-pic" />
+                  <img src={profilePic} className="profile-pic" alt="profile-pic" />
                 </a>
               </li>
             </ul>
