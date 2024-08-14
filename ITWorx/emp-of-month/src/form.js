@@ -8,6 +8,23 @@ export function FormPage() {
     useEffect(()=>{
         document.title = "itworx | Form";
     },[]);
+    const [formData, setFormData] = React.useState({
+      nomineename: "",
+      Nomineemail: "",
+      reason: "",
+      usersname:"",
+      usermail:""
+    });
+    const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setFormData({ ...formData, [name]: value });
+    };
+    const handleSubmit = (event) => {
+      event.preventDefault();
+  
+    
+    };
+
     return (
         <>
         <NavEmp style={{ width: '100vw' }}></NavEmp>
@@ -26,6 +43,9 @@ export function FormPage() {
             class="form-control w-50 p-3"
             id="NomineeName"
             placeholder="First Last"
+            value={formData.nomineename}
+            onChange={handleInputChange}
+
           />
         </div>
       </div>
@@ -40,6 +60,8 @@ export function FormPage() {
           class="form-control w-50 p-3"
           id="NomineeEmail"
           placeholder="Nominee's email"
+          value={formData.Nomineemail}
+          onChange={handleInputChange}
           aria-label="Nominee's email"
           aria-describedby="basic-addon2"
         />
@@ -57,6 +79,8 @@ export function FormPage() {
             class="form-control w-50 p-3"
             placeholder="Leave your reasoning here"
             id="Reason"
+            value={formData.reason}
+            onChange={handleInputChange}
             style={{height: '100px'}}
           ></textarea>
           <label for="Reason">Reason For Nomination</label>
@@ -74,6 +98,8 @@ export function FormPage() {
               class="form-control w-50 p-3"
               id="YourName"
               placeholder="First Last"
+              value={formData.usersname}
+              onchange={handleInputChange}
             />
           </div>
         </div>
@@ -90,6 +116,8 @@ export function FormPage() {
           class="form-control w-50 p-3"
           id="YourEmail"
           placeholder="Nominee's email"
+          value={formData.usermail}
+          onChange={handleInputChange}
           aria-label="Nominee's email"
           aria-describedby="basic-addon2"
         />
