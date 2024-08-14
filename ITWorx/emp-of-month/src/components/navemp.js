@@ -25,10 +25,10 @@ const NavEmp = () => {
                 <a className="nav-link active" aria-current="page" href="#">Home</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">Careers</a>
+                <a className="nav-link" href="#">Nominations</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">Blog</a>
+                <a className="nav-link" href="#">Vote</a>
               </li>
               <li className="nav-item">
                 <a className="nav-link" href="#">About Us</a>

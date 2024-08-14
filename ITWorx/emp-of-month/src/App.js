@@ -15,6 +15,8 @@ import Adminnnnn from './adminHome'; // Import the Adminnnnn component
 import Login from './login';
 import EmpHome from './empHome';
 import AdminNomin from './adminNominations'
+import EmpNomin from './empNominations'
+
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -28,7 +30,8 @@ function App() {
         <Route path="/emp" exact element={<EmpHome />}/>
         <Route path="/adminNom" exact element={<AdminNomin />}/>
         <Route path="/login" exact element={<Login />}/>
-        
+        <Route path="/empNom" exact element={<EmpNomin />}/>
+
       </Routes>
     </BrowserRouter>
   );

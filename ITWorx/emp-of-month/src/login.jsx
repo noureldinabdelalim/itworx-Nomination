@@ -1,4 +1,7 @@
 import React from 'react';
+import { useState } from "react";
+import './styles.css'
+
 import {
   MDBBtn,
   MDBContainer,
@@ -14,6 +17,28 @@ import background from './background.jpg';
 import Nav from './components/nav';
 
 function Login() {
+
+  const [formData, setFormData] = React.useState({
+		username: "",
+		password: "",
+	});
+
+  const handleInputChange = (e) => {
+		const { name, value } = e.target;
+		setFormData({ ...formData, [name]: value });
+	};
+
+  const handleSubmit = (event) => {
+		event.preventDefault();
+
+		handleLogin();
+	};
+
+
+  const handleLogin = async () => {
+
+  };
+
   return (
     <>
      <div  style={{ backgroundColor: '#ab2228', height: '100vh',
@@ -55,17 +80,19 @@ function Login() {
                       </div>
                       <p>Please login to your account</p>
                       <MDBInputGroup className="mb-3">
-  <MDBInput type="text" id="form1" placeholder="Email address" aria-label="Email address" aria-describedby="basic-addon2" />
+  <MDBInput type="text" id="form1" placeholder="Email address" aria-label="Email address" aria-describedby="basic-addon2" value={formData.username}
+									onChange={handleInputChange}/>
   <span className="input-group-text" >@itworx.com</span>
 </MDBInputGroup>
-                    <MDBInput wrapperClass='mb-4' placeholder="Password" id='form2' type='password' />
+                    <MDBInput wrapperClass='mb-4' placeholder="Password" id='form2' type='password' onChange={handleInputChange}
+									value={formData.password}/>
                       <div className="text-center pt-1 mb-5 pb-1">
-                        <MDBBtn className="mb-4 w-100 gradient-custom-2">Sign in</MDBBtn>
+                        <MDBBtn className="mb-4 w-100" style={{ maxHeight: '40px' }}>Sign in</MDBBtn>
                         <a className="text-muted" href="#!">Forgot password?</a>
                       </div>
                       <div className="d-flex flex-row align-items-center justify-content-center pb-4 mb-4">
                         <p className="mb-0">Facing an issue Logging in?</p>
-                        <MDBBtn outline className='mx-2' color='danger'>
+                        <MDBBtn outline className='mx-2' color='danger' style={{ maxHeight: '40px' , maxWidth: '80px'}}>
                           Report
                         </MDBBtn>
                       </div>

@@ -6,7 +6,7 @@ import employee1 from './employee1.jpg';
 import employee2 from './employee2.jpg';
 import employee3 from './employee3.jpg';
 import logo from './logo.jpeg';
-import NavAdmin from './components/navadmin';
+import NavEmp from './components/navemp';
 import SideNavAdmin from './components/sidenavadmin';
 
 
@@ -14,7 +14,7 @@ import SideNavAdmin from './components/sidenavadmin';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function AdminNom() {
+function EmpNom() {
     const [nominees, setNominees] = useState([
         {
           id: 1,
@@ -76,7 +76,7 @@ function AdminNom() {
 
   return (
     <div>
-     <NavAdmin/>
+     <NavEmp/>
 
       <div style={{
         marginTop: '10px',
@@ -87,32 +87,7 @@ function AdminNom() {
         marginRight: '100px',
         borderRadius: '2%',
       }}>
-        <aside style={{
-          float: 'left',
-          width: '150px',
-          marginLeft: '20px',
-          marginTop: '40px',
-          height: '1200px',
-        }}>
-          <ul className="nav flex-column">
-            <li className="nav-item">
-              <a className="nav-link active text-black fw-bold border-bottom border-1 border-dark" aria-current="page" href="#">Nominations</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link text-black fw-bold border-bottom border-1 border-dark" href="#">Voting</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link text-black fw-bold border-bottom border-1 border-dark" href="#">Results</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link text-black fw-bold border-bottom border-1 border-dark" href="#">Settings</a>
-            </li>
-          </ul>
-
-          <button type="button" className="btn btn-danger fw-bold" style={{ marginTop: '850px', verticalAlign: 'baseline', width: '250px' }}>
-            New Employee of the Month
-          </button>
-        </aside>
+        
 
         <h1 style={{ paddingLeft: '350px', paddingTop: '30px', fontWeight: 'bolder' }}>
           Nominations
@@ -123,7 +98,7 @@ function AdminNom() {
           Nominations are anonymous.
         </p>
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" className="bi bi-plus-square" viewBox="0 0 16 16" style={{ marginLeft: '180px' , cursor: 'pointer'}} onClick={handleBiPlusImageClick}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" className="bi bi-plus-square" viewBox="0 0 16 16" style={{ marginLeft: '350px' , cursor: 'pointer'}} onClick={handleBiPlusImageClick}>
           <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
           <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
         </svg>
@@ -157,7 +132,7 @@ function AdminNom() {
 
           {nominees.map((nominee, index) => (
   <div key={index}>
-    <img src={nominee.image} className="nominee-pic" style={{ marginLeft: '180px' }} />
+    <img src={nominee.image} className="nominee-pic" style={{ marginLeft: '350px' }} />
     <div style={{
       backgroundColor: 'rgb(237, 242, 242)',
       width: '300px',
@@ -200,4 +175,4 @@ function AdminNom() {
   );
 }
 
-export default AdminNom;
+export default EmpNom;
