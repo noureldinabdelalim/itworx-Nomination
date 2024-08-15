@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import NavEmp from "./components/navemp";
 
-const nominees = [
-  { id: 1, name: 'John Doe', votes: 25, image: 'IMG_5739.JPG'},
+// Initial nominees data
+const initialNominees = [
+  { id: 1, name: 'John Doe', votes: 25, image: 'IMG_5739.JPG' },
   { id: 2, name: 'Jane Smith', votes: 18, image: 'IMG_5739.JPG' },
   { id: 3, name: 'Robert Johnson', votes: 12, image: 'IMG_5739.JPG' },
   { id: 4, name: 'Robert Parks', votes: 7, image: 'IMG_5739.JPG' },
@@ -12,15 +13,29 @@ const nominees = [
 const prizes = [
   'First Prize: $1000',
   'Second Prize: $500',
-  'Third Prize: $250',  
+  'Third Prize: $250',
   'Fourth Prize: $100',
   'Fifth Prize: $50',
 ];
 
 export default function VoteEmp() {
+  // State for storing nominees
+  const [nominees, setNominees] = useState(initialNominees);
+
   useEffect(() => {
     document.title = "itworx | Vote";
   }, []);
+
+  // Handler for voting
+  const handleVote = (id) => {
+    setNominees(prevNominees =>
+      prevNominees.map(nominee =>
+        nominee.id === id
+          ? { ...nominee, votes: nominee.votes + 1 }
+          : nominee
+      )
+    );
+  };
 
   return (
     <>
@@ -42,7 +57,7 @@ export default function VoteEmp() {
                       <h5 className="mb-1">{nominee.name}</h5>
                       <p className="mb-0">Votes: {nominee.votes}</p>
                     </div>
-                    <button type="button" className="btn btn-light">Vote</button>
+                    <button type="button" className="btn btn-light" onClick={() => handleVote(nominee.id)}>Vote</button>
                   </div>
                 </li>
               ))}
