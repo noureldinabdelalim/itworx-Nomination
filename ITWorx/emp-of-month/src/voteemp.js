@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import NavEmp from "./components/navemp";
-
-// Initial nominees data
 const initialNominees = [
   { id: 1, name: 'John Doe', votes: 25, image: 'IMG_5739.JPG' },
   { id: 2, name: 'Jane Smith', votes: 18, image: 'IMG_5739.JPG' },
@@ -19,8 +17,7 @@ const prizes = [
 ];
 
 export default function VoteEmp() {
-  // State for storing nominees
-  const [nominees, setNominees] = useState(initialNominees);
+    const [nominees, setNominees] = useState(initialNominees);
 
   useEffect(() => {
     document.title = "itworx | Vote";
