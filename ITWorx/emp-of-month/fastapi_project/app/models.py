@@ -76,9 +76,11 @@ class Nominations(Base):
     nomineemail = Column(String(25), ForeignKey('Employee.email'), primary_key=True)
     reason = Column(String(25), nullable=False)
     month = Column(Integer, primary_key=True)
+    useremail = Column(String(25), ForeignKey('Employee.email'))
 
     user = relationship("Employee", foreign_keys=[userid])
     nominee = relationship("Employee", foreign_keys=[nomineemail])
+    user_email_relation = relationship("Employee", foreign_keys=[useremail])
 
 """
 def check_nominations_limit(session, new_nomination):
