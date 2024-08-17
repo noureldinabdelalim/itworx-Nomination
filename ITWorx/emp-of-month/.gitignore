@@ -5,6 +5,19 @@
 /.pnp
 .pnp.js
 
+# Virtual environment
+venv/
+env/
+
+# Compiled Python files
+*.pyc
+*.pyo
+__pycache__/
+
+# IDE/editor directories
+.vscode/
+.idea/
+
 # testing
 /coverage
 

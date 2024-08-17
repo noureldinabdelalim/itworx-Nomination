@@ -1,23 +1,27 @@
 #import psycopg2
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String, Numeric, Boolean, ForeignKey
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from urllib.parse import quote_plus
 
-
-#if using object relational mapping
 Base = declarative_base()
+#if using object relational mapping
+#Base = declarative_base()
 
 
 class Employee(Base):
     __tablename__ = 'Employee'
 
-    userid = Column(Integer, primary_key=True)
+    userid = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(25), unique=True, nullable=False)
     password = Column(String(25), nullable=False)
     name = Column(String(25), nullable=False)
     isadmin = Column(Boolean, default=False)
     voted = Column(Boolean, default=False)
     nominations = Column(Integer, default=3)
+
+    def __repr__(self) -> str:
+        return (f"<Employee userid: {self.userid}, name: {self.name}, email: {self.email}, "
+                f"isadmin: {self.isadmin}, voted: {self.voted}, nominations: {self.nominations}>")
 
 class Votings(Base):
     __tablename__ = 'votings'
@@ -27,14 +31,22 @@ class Votings(Base):
     numberofvotes = Column(Integer, default=0)
     voted = relationship("Employee", foreign_keys=[votedid])
 
+    def __repr__(self) -> str:
+        return (f"<Votings votedid: {self.votedid}, month: {self.month}, "
+                f"numberofvotes: {self.numberofvotes}>")
+
 class ResultOfMonth(Base):
-    __tablename__ = 'result of month'
+    __tablename__ = 'resultofmonth'
 
     userid = Column(Integer, ForeignKey('Employee.userid'), primary_key=True)
     month = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False)
 
     employee = relationship("Employee")
+
+    def __repr__(self) -> str:
+        return (f"<ResultOfMonth userid: {self.userid}, month: {self.month}, "
+                f"name: {self.name}>")
 
 class Nominations(Base):
     __tablename__ = 'nominations'
@@ -45,99 +57,30 @@ class Nominations(Base):
 
     nominee = relationship("Employee", foreign_keys=[nomineemail])
 
+    def __repr__(self) -> str:
+        return (f"<Nominations nomineemail: {self.nomineemail}, month: {self.month}, "
+                f"reason: {self.reason}>")
 
-engine = create_engine('postgresql://postgres:Plm!@123@localhost:5432/empofmonth')
+
+
+
+engine = create_engine("postgresql+psycopg2://postgres:Plm%21%40123@localhost:5432/empdatabase")
+
 Base.metadata.create_all(engine)
-
-try:
-    # Connect to the database
-    connection = engine.connect()
-    print("Connection to the database was successful.")
-    connection.close()
-except Exception as e:
-    print(f"Error connecting to the database: {e}")
-
-
-inspector = inspect(engine)
-tables = inspector.get_table_names()
-print("Tables in the database:", tables)
 
 Session = sessionmaker(bind=engine)
 session = Session()
-
-try:
-    new_employee = Employee(
-        userid=1,
-        email="test@example.com",
-        password="password123",
-        name="Test User"
-    )
-    session.add(new_employee)
-    session.commit()
-    print("Employee added successfully.")
-
-    # Query the employee
-    queried_employee = session.query(Employee).filter_by(userid=1).first()
-    if queried_employee:
-        print(f"Queried Employee: {queried_employee.name}, {queried_employee.email}")
-
-except Exception as e:
-    print(f"Error during database operations: {e}")
-
-finally:
-    session.close()
+employee1 = Employee(
+    email="john.doe@example.com",
+    password="securepassword",
+    name="John Doe",
+    isadmin=True,
+    voted=False,
+    nominations=3
+)
+session.add(employee1)
+session.commit()
+session.close()
 
 
-"""
-#if not using orm
-try:   
-    connection = psycopg2.connect(
-        host="localhost", 
-        database="empofmonth.sql", 
-        user="postgres",  
-        password="Plm!@123",
-        port='5432' 
-    )
 
-    cursor = connection.cursor()
-       # Print PostgreSQL Connection properties
-    print(connection.get_dsn_parameters(), "\n")
-
-    # Execute a SQL query to check connection
-    cursor.execute("SELECT version();")
-    
-    # Fetch and display the result
-    record = cursor.fetchone()
-    print("You are connected to - ", record, "\n")
-
-except Exception as error:
-    print("Error while connecting to PostgreSQL", error)
-
-finally:
-    if connection:
-        cursor.close()
-        connection.close()
-        print("PostgreSQL connection is closed")
-"""
-"""
-class User(Base):
-    name: str
-    email: str
-    password: str
-
-class Nominees(Base):
-    name: str
-    email: str
-    description: str
-    votes: int
-
-class Winners(Base):
-    name: str
-    email: str
-    year: int
-    
-
-class Result(Base):
-    winner: Winner
-    nominees: List[Nominee]
-"""
