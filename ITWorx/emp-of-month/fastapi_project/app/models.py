@@ -1,7 +1,92 @@
-import psycopg2
+#import psycopg2
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
+
+#if using object relational mapping
+Base = declarative_base()
+
+
+class Employee(Base):
+    __tablename__ = 'Employee'
+
+    userid = Column(Integer, primary_key=True)
+    email = Column(String(25), unique=True, nullable=False)
+    password = Column(String(25), nullable=False)
+    name = Column(String(25), nullable=False)
+    isadmin = Column(Boolean, default=False)
+    voted = Column(Boolean, default=False)
+    nominations = Column(Integer, default=3)
+
+class Votings(Base):
+    __tablename__ = 'votings'
+
+    votedid = Column(Integer, ForeignKey('Employee.userid'), primary_key=True)
+    month = Column(Integer, primary_key=True)
+    numberofvotes = Column(Integer, default=0)
+    voted = relationship("Employee", foreign_keys=[votedid])
+
+class ResultOfMonth(Base):
+    __tablename__ = 'result of month'
+
+    userid = Column(Integer, ForeignKey('Employee.userid'), primary_key=True)
+    month = Column(Integer, primary_key=True)
+    name = Column(String(25), nullable=False)
+
+    employee = relationship("Employee")
+
+class Nominations(Base):
+    __tablename__ = 'nominations'
+
+    nomineemail = Column(String(25), ForeignKey('Employee.email'), primary_key=True)
+    reason = Column(String(25), nullable=False)
+    month = Column(Integer, primary_key=True)
+
+    nominee = relationship("Employee", foreign_keys=[nomineemail])
+
+
+engine = create_engine('postgresql://postgres:Plm!@123@localhost:5432/empofmonth')
+Base.metadata.create_all(engine)
+
+try:
+    # Connect to the database
+    connection = engine.connect()
+    print("Connection to the database was successful.")
+    connection.close()
+except Exception as e:
+    print(f"Error connecting to the database: {e}")
+
+
+inspector = inspect(engine)
+tables = inspector.get_table_names()
+print("Tables in the database:", tables)
+
+Session = sessionmaker(bind=engine)
+session = Session()
+
+try:
+    new_employee = Employee(
+        userid=1,
+        email="test@example.com",
+        password="password123",
+        name="Test User"
+    )
+    session.add(new_employee)
+    session.commit()
+    print("Employee added successfully.")
+
+    # Query the employee
+    queried_employee = session.query(Employee).filter_by(userid=1).first()
+    if queried_employee:
+        print(f"Queried Employee: {queried_employee.name}, {queried_employee.email}")
+
+except Exception as e:
+    print(f"Error during database operations: {e}")
+
+finally:
+    session.close()
+
 
 """
 #if not using orm
@@ -34,70 +119,6 @@ finally:
         connection.close()
         print("PostgreSQL connection is closed")
 """
-#if using object relational mapping
-Base = declarative_base()
-
-
-class Employee(Base):
-    __tablename__ = 'Employee'
-
-    userid = Column(Integer, primary_key=True)
-    email = Column(String(25), unique=True, nullable=False)
-    password = Column(String(25), nullable=False)
-    name = Column(String(25), nullable=False)
-    isadmin = Column(Boolean, default=False)
-
-class Votings(Base):
-    __tablename__ = 'votings'
-
-    voterid = Column(Integer, ForeignKey('Employee.userid'), primary_key=True)
-    votedid = Column(Integer, ForeignKey('Employee.userid'), primary_key=True)
-    month = Column(Integer, primary_key=True)
-    numberofvotes = Column(Integer, default=0)
-
-    voter = relationship("Employee", foreign_keys=[voterid])
-    voted = relationship("Employee", foreign_keys=[votedid])
-
-    __table_args__ = (UniqueConstraint('voterid', 'month', name='_voter_month_uc'),)
-
-class ResultOfMonth(Base):
-    __tablename__ = 'result of month'
-
-    userid = Column(Integer, ForeignKey('Employee.userid'), primary_key=True)
-    month = Column(Integer, primary_key=True)
-    name = Column(String(25), nullable=False)
-
-    employee = relationship("Employee")
-
-class Nominations(Base):
-    __tablename__ = 'nominations'
-
-    userid = Column(Integer, ForeignKey('Employee.userid'), primary_key=True)
-    nomineemail = Column(String(25), ForeignKey('Employee.email'), primary_key=True)
-    reason = Column(String(25), nullable=False)
-    month = Column(Integer, primary_key=True)
-    useremail = Column(String(25), ForeignKey('Employee.email'))
-
-    user = relationship("Employee", foreign_keys=[userid])
-    nominee = relationship("Employee", foreign_keys=[nomineemail])
-    user_email_relation = relationship("Employee", foreign_keys=[useremail])
-
-"""
-def check_nominations_limit(session, new_nomination):
-     
-        count = session.query(Nominations).filter_by(userid=new_nomination.userid, month=new_nomination.month).count()
-        if count >= 3:
-            raise ValueError('A user can nominate only 3 times per month.')
-        return new_nomination
-"""
-engine = create_engine('postgresql://postgres:Plm!@123@localhost:5432/empofmonth')
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
-
-
 """
 class User(Base):
     name: str
