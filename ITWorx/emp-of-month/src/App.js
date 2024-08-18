@@ -15,10 +15,10 @@ import Login from './login';
 import EmpHome from './empHome';
 import AdminNomin from './adminNominations'
 import EmpNomin from './empNominations'
-
+import VoteAdmin from './voteadmin'
 import AboutEmp from './about';
 import FormPage from './form';
-import voteEmp from './voteemp';
+
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -34,8 +34,9 @@ function App() {
         <Route path="/aboutemp" exact element={<AboutEmp />}/>
         <Route path="/login" exact element={<Login />}/>
         <Route path="/empNom" exact element={<EmpNomin />}/>
-
+        <Route path="/voteadmin" exact element={<VoteAdmin/>}/>
         <Route path="/form" exact element={<FormPage />}/>
+
       </Routes>
     </BrowserRouter>
   );

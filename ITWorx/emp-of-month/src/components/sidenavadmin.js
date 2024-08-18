@@ -17,7 +17,7 @@ const SideNavAdmin = () => {
       <ul className="nav flex-column">
         <li className="nav-item">
           <Link
-            to="/nominations"
+            to="/adminnominations"
             className="nav-link active text-black fw-bold border-bottom border-1 border-dark"
           >
             Nominations
@@ -25,7 +25,7 @@ const SideNavAdmin = () => {
         </li>
         <li className="nav-item">
           <Link
-            to="/voteemp"
+            to="/voteadmin"
             className="nav-link text-black fw-bold border-bottom border-1 border-dark"
           >
             Voting

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response , HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.requests import Request
 from fastapi.security.utils import get_authorization_scheme_param
@@ -9,8 +9,11 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from typing import List, Optional
-from models import Login, GetType, CreatePharmacist
+from models import Login, GetType
 from dbAccess import get_user_by_email
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from models import Nominees, db
 
 app = FastAPI()
 
@@ -33,9 +36,26 @@ async def login_user(login: Login):
 
 
 @app.post("/add_nominee")
-async def add_nominee(nominee: Nominee):
-    # implement add nominee logic here
-    return JSONResponse(content={"message": "Nominee added successfully"}, status_code=201)
+async def add_nominee(nominee: Nominees):
+    engine = create_engine()
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        
+        existing_nominee = session.query(nominee).filter(nominee.name == nominee.name).first()
+        if existing_nominee:
+            raise HTTPException(status_code=400, detail="Nominee already exists")
+
+        session.add(nominee)
+        session.commit()
+        return JSONResponse(content={"message": "Nominee added successfully"}, status_code=201)
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()
+        return JSONResponse(content={"message": "Nominee added successfully"}, status_code=201)
 
 @app.get("/view_nominees")
 async def view_nominees():
