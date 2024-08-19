@@ -179,11 +179,34 @@ async def view_nominees():
     finally:
         db.close()
 
+
 @app.get("/view_previous_winners")
 async def view_previous_winners():
-    # Implement the logic to retrieve the list of previous winners from the database
-    winners = [...]  # retrieve list of previous winners from database
-    return JSONResponse(content={"winners": winners}, status_code=200)
+    db = SessionLocal()  # Create a new database session
+
+    try:
+        # Execute the query to get the top three winners with the highest "month" values
+        result = db.execute(
+             text("""
+                SELECT * 
+                FROM resultofmonth 
+                ORDER BY "month" DESC 
+                LIMIT 3
+            """)
+        ).fetchall()
+
+        if result:
+            # Convert result to a list of dictionaries
+            winners = [dict(row) for row in result]
+            return JSONResponse(content={"winners": winners}, status_code=200)
+        else:
+            raise HTTPException(status_code=404, detail="No winners found")
+    except Exception as e:
+        # Print the error for debugging purposes
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while retrieving winners")
+    finally:
+        db.close()  # Ensure the database session is closed
 
 
 @app.get("/view_nominee_profile/{nominee_email}")
