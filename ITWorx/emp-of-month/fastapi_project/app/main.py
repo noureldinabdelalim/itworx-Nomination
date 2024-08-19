@@ -75,7 +75,7 @@ async def get_user_by_email(email: str):
     # Implement the logic to retrieve a user from the database by their email
     db = SessionLocal()
     try:
-        result = db.execute(text("SELECT * FROM users WHERE email = :email"), {"email": email}).fetchone()
+        result = db.execute(text("SELECT * FROM employee WHERE email = :email"), {"email": email}).fetchone()
         if result:
             return result
         return None
@@ -124,8 +124,8 @@ async def add_nominee(name: str):
 async def view_nominees():
     db = SessionLocal()
     try:
-        result = db.execute(text("SELECT name FROM nominees")).fetchall()
-        nominees = [row['name'] for row in result]
+        result = db.execute(text("SELECT nomineemail FROM nominee")).fetchall()
+        nominees = [row['email'] for row in result]
         return JSONResponse(content={"nominees": nominees}, status_code=200)
     finally:
         db.close()
