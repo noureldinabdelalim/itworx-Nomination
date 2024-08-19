@@ -20,56 +20,56 @@ finally:
 
     db.close()
 
-try:
-    # SQL INSERT query
-    insert_query = text("""
-        INSERT INTO public.employee (name, email, password, isadmin)
-        VALUES (:name, :email, :password, :isadmin)
-    """)
+# try:
+#     # SQL INSERT query
+#     insert_query = text("""
+#         INSERT INTO public.employee (name, email, password, isadmin)
+#         VALUES (:name, :email, :password, :isadmin)
+#     """)
 
-    # Execute the query with parameters
-    db.execute(insert_query, {
-        'name': 'nourrr',
-        'email': 'nourrr@nour',
-        'password': '12345',
-        'isadmin': False
-    })
+#     # Execute the query with parameters
+#     db.execute(insert_query, {
+#         'name': 'nourrr',
+#         'email': 'nourrr@nour',
+#         'password': '12345',
+#         'isadmin': False
+#     })
 
-    # Commit the transaction
-    db.commit()
-    print('Insert successful')
+#     # Commit the transaction
+#     db.commit()
+#     print('Insert successful')
 
-except Exception as e:
-    print(f"Error: {str(e)}")
+# except Exception as e:
+#     print(f"Error: {str(e)}")
 
-finally:
-    db.close()
+# finally:
+#     db.close()
 
 
-# UPDATE QUERY
-try:
-    # SQL UPDATE query
-    update_query = text("""
-        UPDATE public.employee
-        SET voted = :voted
-        WHERE email = :email
-    """)
+# # UPDATE QUERY
+# try:
+#     # SQL UPDATE query
+#     update_query = text("""
+#         UPDATE public.employee
+#         SET voted = :voted
+#         WHERE email = :email
+#     """)
 
-    # Execute the query with parameters
-    db.execute(update_query, {
-        'voted': True,
-        'email': 'nour@nour'
-    })
+#     # Execute the query with parameters
+#     db.execute(update_query, {
+#         'voted': True,
+#         'email': 'nour@nour'
+#     })
 
-    # Commit the transaction
-    db.commit()
-    print('Update successful')
+#     # Commit the transaction
+#     db.commit()
+#     print('Update successful')
 
-except Exception as e:
-    print(f"Error: {str(e)}")
+# except Exception as e:
+#     print(f"Error: {str(e)}")
 
-finally:
-    db.close()
+# finally:
+#     db.close()
 
 async def get_user_by_email(email: str):
     # Implement the logic to retrieve a user from the database by their email
@@ -99,6 +99,9 @@ async def login_user(email: str, password: str):
         data={"sub": email}, expires_delta=access_token_expires
     )
     return JSONResponse(content={"access_token": access_token, "token_type": "bearer"}, status_code=200)
+
+
+
 
 @app.post("/add_nominee")
 async def add_nominee(name: str):
@@ -133,17 +136,34 @@ async def view_previous_winners():
     winners = [...]  # retrieve list of previous winners from database
     return JSONResponse(content={"winners": winners}, status_code=200)
 
-@app.get("/view_nominee_profile/{nominee_id}")
-async def view_nominee_profile(nominee_id: int):
+
+@app.get("/view_nominee_profile/{nominee_email}")
+async def view_nominee_profile(nominee_email: str):
+    
     db = SessionLocal()
+
     try:
-        result = db.execute(text("SELECT * FROM nominees WHERE id = :id"), {"id": nominee_id}).fetchone()
+        result = db.execute(
+    text("""
+        SELECT * 
+        FROM employee e 
+        JOIN nominations n ON n.nomineemail = e.email 
+        WHERE n.nomineemail = :nominee_email
+    """),
+    {"nominee_email": "nour@nour"}
+).fetchone()        
+        print('success')
         if result:
-            return JSONResponse(content={"nominee_profile": dict(result)}, status_code=200)
+            print(content={"nominee_profile": dict(result)}) 
         else:
             raise HTTPException(status_code=404, detail="Nominee not found")
+    except Exception as e:
+        print(str(e))
     finally:
+
         db.close()
+
+   
 
 @app.get("/view_results")
 async def view_results():
