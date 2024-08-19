@@ -19,15 +19,24 @@ import Nav from './components/nav';
 function Login() {
 
   const [formData, setFormData] = React.useState({
-		username: "",
+		email: "",
 		password: "",
 	});
 
   const handleInputChange = (e) => {
-		const { name, value } = e.target;
-		setFormData({ ...formData, [name]: value });
-	};
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
+  const handleLogin = async () => {
+    try {
+      // Add your API call or authentication logic here
+      console.log('Form data:', formData);
+      // Example: const response = await fetch('/api/login', { method: 'POST', body: JSON.stringify(formData) });
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
   const handleSubmit = (event) => {
 		event.preventDefault();
 
@@ -35,9 +44,7 @@ function Login() {
 	};
 
 
-  const handleLogin = async () => {
-
-  };
+  
 
   return (
     <>
@@ -80,11 +87,11 @@ function Login() {
                       </div>
                       <p>Please login to your account</p>
                       <MDBInputGroup className="mb-3">
-  <MDBInput type="text" id="form1" placeholder="Email address" aria-label="Email address" aria-describedby="basic-addon2" value={formData.username}
+  <MDBInput type="text" id="form1" placeholder="Email address" name="email" aria-label="Email address" aria-describedby="basic-addon2" value={formData.username}
 									onChange={handleInputChange}/>
   <span className="input-group-text" >@itworx.com</span>
 </MDBInputGroup>
-                    <MDBInput wrapperClass='mb-4' placeholder="Password" id='form2' type='password' onChange={handleInputChange}
+                    <MDBInput wrapperClass='mb-4' placeholder="Password" name="password" id='form2' type='password' onChange={handleInputChange}
 									value={formData.password}/>
                       <div className="text-center pt-1 mb-5 pb-1">
                         <MDBBtn className="mb-4 w-100" style={{ maxHeight: '40px' }}>Sign in</MDBBtn>
