@@ -3,43 +3,54 @@ import NavAdmin from "./components/navadmin";
 import SideNavAdmin from "./components/sidenavadmin";
 
 const initialNominees = [
-    { id: 1, name: 'John Doe', votes: 25, image: 'IMG_5739.JPG' },
-    { id: 2, name: 'Jane Smith', votes: 18, image: 'IMG_5739.JPG' },
-    { id: 3, name: 'Robert Johnson', votes: 12, image: 'IMG_5739.JPG' },
-    { id: 4, name: 'Robert Parks', votes: 7, image: 'IMG_5739.JPG' },
-    { id: 5, name: 'Alice Smith', votes: 5, image: 'IMG_5739.JPG' },
-  ];
-  
-  const prizes = [
-    'First Prize: $1000',
-    'Second Prize: $500',
-    'Third Prize: $250',
-    'Fourth Prize: $100',
-    'Fifth Prize: $50',
-  ];
-  
-  export default function VoteAdmin() {
-      const [nominees, setNominees] = useState(initialNominees);
-  
-    useEffect(() => {
-      document.title = "itworx | Vote";
-    }, []);
-  
-    const handleVote = (id) => {
-      setNominees(prevNominees =>
-        prevNominees.map(nominee =>
-          nominee.id === id
-            ? { ...nominee, votes: nominee.votes + 1 }
-            : nominee
-        )
-      );
-    };
-  
-    return (
-      <>
-        <NavAdmin />
-        <SideNavAdmin/>
-        
+  { id: 1, name: 'John Doe', votes: 25, image: 'IMG_5739.JPG' },
+  { id: 2, name: 'Jane Smith', votes: 18, image: 'IMG_5739.JPG' },
+  { id: 3, name: 'Robert Johnson', votes: 12, image: 'IMG_5739.JPG' },
+  { id: 4, name: 'Robert Parks', votes: 7, image: 'IMG_5739.JPG' },
+  { id: 5, name: 'Alice Smith', votes: 5, image: 'IMG_5739.JPG' },
+];
+
+const prizes = [
+  'First Prize: $1000',
+  'Second Prize: $500',
+  'Third Prize: $250',
+  'Fourth Prize: $100',
+  'Fifth Prize: $50',
+];
+
+export default function VoteAdmin() {
+  const [nominees, setNominees] = useState(initialNominees);
+
+  useEffect(() => {
+    document.title = "itworx | Vote";
+  }, []);
+
+  const handleVote = (id) => {
+    setNominees(prevNominees =>
+      prevNominees.map(nominee =>
+        nominee.id === id
+          ? { ...nominee, votes: nominee.votes + 1 }
+          : nominee
+      )
+    );
+  };
+
+  return (
+    <div style={{ backgroundColor: '#ab2228' }}>
+      <NavAdmin style={{ width: '100vw' }} />
+      <div
+        style={{
+          marginTop: -40,
+          marginLeft: 14,
+          backgroundColor: 'rgb(237, 242, 242)',
+          width: '98%',
+          height: 750,
+          marginRight: 100,
+          borderRadius: '2%',
+          display: "flex",
+        }}
+      >
+        <SideNavAdmin />
         <main className="container mt-4">
           <h2 style={{ paddingTop: '50px' }}>Employee of The Month</h2>
           <h6 style={{ paddingLeft: '30px' }}>Vote for your favourite Employee</h6>
@@ -79,7 +90,7 @@ const initialNominees = [
             </div>
           </div>
         </main>
-      </>
-    );
-  }
-  
+      </div>
+    </div>
+  );
+}
