@@ -7,8 +7,8 @@ import logging
 
 app = FastAPI()
 
-SQLALCHEMY_DATABASE_URL = "postgresql://user:user@localhost:5432/postgres"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:432002@localhost:5432/postgres"
+engine = create_engine("postgresql://postgres:432002@localhost:5432/postgres")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 db = SessionLocal()
 try:
@@ -19,6 +19,32 @@ except Exception as e:
 finally:
 
     db.close()
+
+try:
+    # SQL INSERT query
+    insert_query = text("""
+        INSERT INTO public.employee (name, email, password, isadmin)
+        VALUES (:name, :email, :password, :isadmin)
+    """)
+
+    # Execute the query with parameters
+    db.execute(insert_query, {
+        'name': 'moh',
+        'email': 'moh@moh',
+        'password': '123',
+        'isadmin': False
+    })
+
+    # Commit the transaction
+    db.commit()
+    print('Insert successful')
+
+except Exception as e:
+    print(f"Error: {str(e)}")
+
+finally:
+    db.close()
+
 
 
 async def get_user_by_email(email: str):
