@@ -1,25 +1,47 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from datetime import timedelta
 from datetime import datetime
 
 
-app = FastAPI()
+# app = FastAPI()
 
 SQLALCHEMY_DATABASE_URL = "postgresql://user:user@localhost:5432/postgres"
 engine = create_engine("postgresql://user:user@localhost:5432/postgres")
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-db = SessionLocal()
-try:
-    result = db.execute(text("SELECT * FROM public.employee")).fetchall()
-    print('success')
-except Exception as e:
-    print(str(e))
-finally:
+from starlette.middleware.sessions import SessionMiddleware
 
-    db.close()
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Secret key for session encryption
+SECRET_KEY = "abc"  # Replace with your actual secret key
+
+# Add SessionMiddleware to your FastAPI app
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+# SQLALCHEMY_DATABASE_URL = "postgresql://postgres:432002@localhost:5432/postgres"
+# engine = create_engine("postgresql://postgres:432002@localhost:5432/postgres")
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# db = SessionLocal()
+# try:
+#     result = db.execute(text("SELECT * FROM public.employee")).fetchall()
+#     print('success')
+# except Exception as e:
+#     print(str(e))
+# finally:
+
+#     db.close()
 
 # try:
 #     # SQL INSERT query
@@ -72,6 +94,48 @@ finally:
 # finally:
 #     db.close()
 
+
+def authenticate_user(db: Session, username: str, password: str):
+    try:
+        # Query to find the user by username (or email)
+        result = db.execute(
+            text("""
+                SELECT userid, email, password, isadmin 
+                FROM employee 
+                WHERE email = :username
+            """),
+            {"username": username}
+        ).fetchone()
+
+        print(result)
+        if result:
+            user_id, email, db_password, isadmin = result
+
+        # print(user_id, " ",email, " ",db_password)
+            # Compare the provided password with the one in the database
+        if password == db_password:
+                # print(user_id, " ",email, " ",db_password)
+
+                return {"userid": user_id, "username": email, "isadmin": isadmin}
+        else:
+                return None  # Password is incorrect
+        return None  # User not found
+
+    except Exception as e:
+        print(f"Error during authentication: {str(e)}")
+        return None
+
+
+async def get_user_by_email(email: str):
+    # Implement the logic to retrieve a user from the database by their email
+    db = SessionLocal()
+    try:
+        result = db.execute(text("SELECT * FROM employee WHERE email = :email"), {"email": email}).fetchone()
+        if result:
+            return result
+        return None
+    finally:
+        db.close()
 
 # try:
 #     # SQL INSERT query
@@ -146,18 +210,67 @@ async def create_access_token(data: dict, expires_delta: timedelta):
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 @app.post("/login")
-async def login_user(email: str, password: str):
-    user = await get_user_by_email(email)
-    if not user or user['password'] != password:
-        return JSONResponse(content={"error": "Invalid email or password"}, status_code=401)
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = await create_access_token(
-        data={"sub": email}, expires_delta=access_token_expires
-    )
-    return JSONResponse(content={"access_token": access_token, "token_type": "bearer"}, status_code=200)
+async def login(request: Request):
+    
+    db = SessionLocal()
+
+    form = await request.form()
+    email = form.get("email")
+    print(email)
+ 
+    password = form.get("password")
+    print(password)
+    user = authenticate_user(db, email, password)
+    print(user)
+    db.close()
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    print("153")
+
+    # Store user ID in session
+ 
+    request.session['user_id'] = user['userid']
+    request.session['is_admin'] = user['isadmin']
+    print("Session data set:", request.session.get('user_id'), request.session.get('is_admin'))
+
+    
+
+    print("157")
+
+    db = SessionLocal()
+    try:
+        result = db.execute(text("SELECT * FROM employee WHERE email = :email and isadmin = True"), {"email": email}).fetchone()
+        if result:
+                print("157")
+                response = RedirectResponse(url="http://localhost:3000/admin" if user['isadmin'] else "http://localhost:3000/emp", status_code=302)
+                response.set_cookie("session_id", request.session, secure=True, httponly=True)                
+                return response
+                # return RedirectResponse(url="http://localhost:3000/admin", status_code=302)
+
+        print("157")
+        response = RedirectResponse(url="http://localhost:3000/emp" if user['isadmin'] else "http://localhost:3000/emp", status_code=302)
+        response.set_cookie("session_id", request.session, secure=True, httponly=True)        
+        return response
+        # return RedirectResponse(url="http://localhost:3000/emp", status_code=302)
+    finally:
+        db.close()
 
 
 
+@app.get("/session")
+# async def get_session(request: Request):
+#     user_id = request.session.get("user_id")
+#     is_admin = request.session.get("is_admin")
+#     print(user_id,is_admin)
+#     return {"user_id": user_id, "is_admin": is_admin}
+async def get_session(request: Request):
+    user_id = request.session.get("user_id")
+    is_admin = request.session.get("is_admin")
+    response = JSONResponse(content={"user_id": user_id, "is_admin": is_admin}, status_code=200)
+    response.set_cookie("session_id", request.session, secure=True, httponly=True)
+    return response
 
 @app.post("/add_nominee")
 async def add_nominee(name: str , numberofvotes):
@@ -195,17 +308,40 @@ async def add_nominee(name: str , numberofvotes):
 async def view_nominees():
     db = SessionLocal()
     try:
-        result = db.execute(text("SELECT name FROM nominees")).fetchall()
-        nominees = [row['name'] for row in result]
+        result = db.execute(text("SELECT nomineemail FROM nominee")).fetchall()
+        nominees = [row['email'] for row in result]
         return JSONResponse(content={"nominees": nominees}, status_code=200)
     finally:
         db.close()
 
+
 @app.get("/view_previous_winners")
 async def view_previous_winners():
-    # Implement the logic to retrieve the list of previous winners from the database
-    winners = [...]  # retrieve list of previous winners from database
-    return JSONResponse(content={"winners": winners}, status_code=200)
+    db = SessionLocal()  # Create a new database session
+
+    try:
+        # Execute the query to get the top three winners with the highest "month" values
+        result = db.execute(
+             text("""
+                SELECT * 
+                FROM resultofmonth 
+                ORDER BY "month" DESC 
+                LIMIT 3
+            """)
+        ).fetchall()
+
+        if result:
+            # Convert result to a list of dictionaries
+            winners = [dict(row) for row in result]
+            return JSONResponse(content={"winners": winners}, status_code=200)
+        else:
+            raise HTTPException(status_code=404, detail="No winners found")
+    except Exception as e:
+        # Print the error for debugging purposes
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while retrieving winners")
+    finally:
+        db.close()  # Ensure the database session is closed
 
 
 @app.get("/view_nominee_profile/{nominee_email}")
@@ -235,6 +371,12 @@ async def view_nominee_profile(nominee_email: str):
         db.close()
 
    
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/view_results")
 async def view_results():
@@ -255,12 +397,81 @@ async def view_results():
         raise HTTPException(status_code=500, detail="An error occurred while retrieving results")
     finally:
         db.close()
-@app.post("/end_voting")
+@app.put("/vote/{id}")
+async def vote(id: int, request: Request, db: Session = Depends(get_db) ):
+    # Get the voter's ID from the session
+    voter_id = request.session.get('user_id')
+    db= SessionLocal()
+    
+    if not voter_id:
+        raise HTTPException(status_code=401, detail="User not logged in")
+
+    try:
+        # Check if the voter has already voted
+        result = db.execute(
+            text("""
+                SELECT voted 
+                FROM employee 
+                WHERE userid = :voter_id
+            """),
+            {"voter_id": voter_id}
+        ).fetchone()
+
+        if result and result[0]:
+            raise HTTPException(status_code=403, detail="User has already voted")
+
+        # Update the voting table to register the vote
+        db.execute(
+            text("""
+                UPDATE votings 
+                SET numberofvotes = numberofvotes + 1 
+                WHERE votedid = :id
+            """),
+            {"id": id}
+        )
+
+        # Mark the voter as having voted
+        db.execute(
+            text("""
+                UPDATE employee 
+                SET voted = TRUE 
+                WHERE userid = :voter_id
+            """),
+            {"voter_id": voter_id}
+        )
+
+        # Commit the transaction
+        db.commit()
+
+        # return JSONResponse(content={"message": "Vote registered"}, status_code=200)
+
+    except Exception as e:
+        db.rollback()  # Rollback in case of error
+        raise HTTPException(status_code=500, detail="An error occurred while voting")
+
+    finally:
+        db.close()
+
+@app.put("/end_voting")
 async def end_voting():
     # Implement the logic to end the voting
     return JSONResponse(content={"message": "Voting has ended"}, status_code=200)
 
 @app.post("/logout")
-async def logout():
-    # Implement the logic to log out the user
-    return JSONResponse(content={"message": "Logged out successfully"}, status_code=200)
+async def logout(request: Request):
+   if 'user_id' not in request.session:
+        raise HTTPException(status_code=401, detail="User not logged in")
+    
+    # Clear the session
+   request.session.clear()
+    
+    # Redirect to a home or login page after logout
+   return RedirectResponse(url="/login", status_code=302)
+
+
+
+
+
+
+
+
