@@ -3,12 +3,13 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from datetime import timedelta
-import logging
+from datetime import datetime
+
 
 app = FastAPI()
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:432002@localhost:5432/postgres"
-engine = create_engine("postgresql://postgres:432002@localhost:5432/postgres")
+SQLALCHEMY_DATABASE_URL = "postgresql://user:user@localhost:5432/postgres"
+engine = create_engine("postgresql://user:user@localhost:5432/postgres")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 db = SessionLocal()
 try:
@@ -71,21 +72,76 @@ finally:
 # finally:
 #     db.close()
 
-async def get_user_by_email(email: str):
-    # Implement the logic to retrieve a user from the database by their email
-    db = SessionLocal()
-    try:
-        result = db.execute(text("SELECT * FROM users WHERE email = :email"), {"email": email}).fetchone()
-        if result:
-            return result
-        return None
-    finally:
-        db.close()
 
+# try:
+#     # SQL INSERT query
+#     insert_query = text("""
+#          INSERT INTO public.employee (name, email, password, isadmin)
+#          VALUES (:name, :email, :password, :isadmin)
+#      """)
+
+#      # Execute the query with parameters
+#     db.execute(insert_query, {
+#         'name': 'mohamedsherif',
+#          'email': 'mohsherif@icloud',
+#          'password': '1234511',
+#          'isadmin': False
+#      })
+
+# #     # Commit the transaction
+#     db.commit()
+#     print('Insert successful')
+
+# except Exception as e:
+#      print(f"Error: {str(e)}")
+try:
+        # Fetch the results and nominees with mappings to get dictionaries directly
+        results = db.execute(text("SELECT * FROM resultofmonth")).mappings().all()
+        nominees_list = db.execute(text("SELECT * FROM nominations")).mappings().all()
+
+        if results or nominees_list:
+            return JSONResponse(content={"results": results, "nominees": nominees_list}, status_code=200)
+        else:
+            raise HTTPException(status_code=404, detail="No results or nominees found")
+except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while retrieving results")
+finally:
+        db.dispose()
+
+
+
+
+try:
+    # Execute the query to get all results
+    result = db.execute(
+        text("""
+            SELECT * 
+            FROM resultofmonth 
+        """)
+    ).fetchall()
+
+    if result:
+        # Convert result to a list of dictionaries
+        results = [
+            {key: value for key, value in row.items()} 
+            for row in result
+        ]
+        print(results)
+    else:
+        raise HTTPException(status_code=404, detail="No results found")
+except Exception as e:
+    # Print the error for debugging purposes
+    print(f"Error: {e}")
+    raise HTTPException(status_code=500, detail="An error occurred while retrieving results")
+finally:
+    db.close()
 # Define the create_access_token function
 async def create_access_token(data: dict, expires_delta: timedelta):
     # Implement the logic to create an access token for the user
     return "token"
+
+
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -104,22 +160,37 @@ async def login_user(email: str, password: str):
 
 
 @app.post("/add_nominee")
-async def add_nominee(name: str):
+async def add_nominee(name: str , numberofvotes):
     db = SessionLocal()
     try:
-        existing_nominee = db.execute(text("SELECT * FROM nominees WHERE name = :name"), {"name": name}).fetchone()
+        
+        existing_nominee = db.execute(
+    text("SELECT * FROM nominations WHERE nomineemail = :email"),{"email": email}).fetchone()
         if existing_nominee:
-            raise HTTPException(status_code=400, detail="Nominee already exists")
+             raise HTTPException(status_code=400, detail="Nominee already exists")
 
-        db.execute(text("INSERT INTO nominees (name) VALUES (:name)"), {"name": name})
+        
+        db.execute(text("INSERT INTO nominations (nomineemail,reason,month) VALUES (:email,:reason,:month)"), {"email": email,"reason":reason, "month":current_month})
         db.commit()
-        return JSONResponse(content={"message": "Nominee added successfully"}, status_code=201)
+
+        user = db.execute(text("SELECT userid FROM public.employee WHERE name = :name"), {"name": name}).fetchone()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        
+        user_id = user.userid
+        current_month = datetime.now().month
+        voted_id = f"{user_id}-{current_month}-{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+        db.execute(text("INSERT INTO votings (votedid, month, numberofvotes) VALUES (:votedid, :month, :numberofvotes)"),
+                   {"votedid": voted_id, "month": current_month, "numberofvotes": numberofvotes})
+        db.commit()
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+    
     finally:
         db.close()
-
+        
 @app.get("/view_nominees")
 async def view_nominees():
     db = SessionLocal()
@@ -167,10 +238,23 @@ async def view_nominee_profile(nominee_email: str):
 
 @app.get("/view_results")
 async def view_results():
-    # Implement the logic to retrieve the result from the database
-    result = [...]  # retrieve result from database
-    return JSONResponse(content={"result": result}, status_code=200)
+    try:
+        # Fetching data from the database
+        result = db.execute(text("SELECT * FROM resultofmonth")).fetchall()
+        nominees = db.execute(text("SELECT * FROM nominations")).fetchall()
 
+        if result or nominees:
+            # Convert the data to the appropriate format
+            results = [dict(row) for row in result]
+            nominees_list = [dict(row) for row in nominees]
+            return JSONResponse(content={"results": results, "nominees": nominees_list}, status_code=200)
+        else:
+            raise HTTPException(status_code=404, detail="No results or nominees found")
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while retrieving results")
+    finally:
+        db.close()
 @app.post("/end_voting")
 async def end_voting():
     # Implement the logic to end the voting

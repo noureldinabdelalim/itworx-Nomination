@@ -1,14 +1,7 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios"; // If using axios
 import NavAdmin from "./components/navadmin";
 import SideNavAdmin from "./components/sidenavadmin";
-
-const initialNominees = [
-  { id: 1, name: 'John Doe', votes: 25, image: 'IMG_5739.JPG' },
-  { id: 2, name: 'Jane Smith', votes: 18, image: 'IMG_5739.JPG' },
-  { id: 3, name: 'Robert Johnson', votes: 12, image: 'IMG_5739.JPG' },
-  { id: 4, name: 'Robert Parks', votes: 7, image: 'IMG_5739.JPG' },
-  { id: 5, name: 'Alice Smith', votes: 5, image: 'IMG_5739.JPG' },
-];
 
 const prizes = [
   'First Prize: $1000',
@@ -19,10 +12,28 @@ const prizes = [
 ];
 
 export default function VoteAdmin() {
-  const [nominees, setNominees] = useState(initialNominees);
+  const [nominees, setNominees] = useState([]);
 
   useEffect(() => {
     document.title = "itworx | Vote";
+  
+    const fetchResults = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/view_results");
+        console.log("API Response:", response.data); // Log the response
+  
+        if (response.data.nominees) {
+          setNominees(response.data.nominees);
+          console.log("Nominees:", response.data.nominees); // Log the nominees
+        } else {
+          console.error("No nominees data found in the response");
+        }
+      } catch (error) {
+        console.error("Error fetching results:", error);
+      }
+    };
+  
+    fetchResults();
   }, []);
 
   const handleVote = (id) => {
@@ -58,20 +69,24 @@ export default function VoteAdmin() {
           <div className="row">
             <div className="col-md-8">
               <ul className="list-unstyled">
-                {nominees.map((nominee) => (
-                  <li key={nominee.id} className="d-flex align-items-center mb-4">
-                    <a className="nav-link" href="#">
-                      <img src={nominee.image} className="profile-pic me-3" alt={nominee.name} />
-                    </a>
-                    <div className="d-flex justify-content-between w-100">
-                      <div>
-                        <h5 className="mb-1">{nominee.name}</h5>
-                        <p className="mb-0">Votes: {nominee.votes}</p>
+                {nominees.length > 0 ? (
+                  nominees.map((nominee) => (
+                    <li key={nominee.id} className="d-flex align-items-center mb-4">
+                      <a className="nav-link" href="#">
+                        <img src={nominee.image} className="profile-pic me-3" alt={nominee.name} />
+                      </a>
+                      <div className="d-flex justify-content-between w-100">
+                        <div>
+                          <h5 className="mb-1">{nominee.name}</h5>
+                          <p className="mb-0">Votes: {nominee.votes}</p>
+                        </div>
+                        <button type="button" className="btn btn-light" onClick={() => handleVote(nominee.id)}>Vote</button>
                       </div>
-                      <button type="button" className="btn btn-light" onClick={() => handleVote(nominee.id)}>Vote</button>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  ))
+                ) : (
+                  <p>No nominees available.</p>
+                )}
               </ul>
             </div>
             <div className="col-md-4" style={{ marginTop: '-30px' }}>
