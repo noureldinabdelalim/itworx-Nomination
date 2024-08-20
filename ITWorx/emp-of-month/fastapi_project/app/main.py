@@ -1,16 +1,27 @@
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import JSONResponse
-from fastapi.responses import RedirectResponse
-from fastapi import Request
-
+from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 from datetime import timedelta
-import logging
 from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key="abc123")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Secret key for session encryption
+SECRET_KEY = "abc"  # Replace with your actual secret key
+
+# Add SessionMiddleware to your FastAPI app
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 SQLALCHEMY_DATABASE_URL = "postgresql://postgres:432002@localhost:5432/postgres"
 engine = create_engine("postgresql://postgres:432002@localhost:5432/postgres")
@@ -82,20 +93,24 @@ def authenticate_user(db: Session, username: str, password: str):
         # Query to find the user by username (or email)
         result = db.execute(
             text("""
-                SELECT userid, email, password 
+                SELECT userid, email, password, isadmin 
                 FROM employee 
                 WHERE email = :username
             """),
             {"username": username}
         ).fetchone()
 
+        print(result)
         if result:
-            user_id, email, db_password = result
+            user_id, email, db_password, isadmin = result
 
+        # print(user_id, " ",email, " ",db_password)
             # Compare the provided password with the one in the database
-            if password == db_password:
-                return {"userid": user_id, "username": email}
-            else:
+        if password == db_password:
+                # print(user_id, " ",email, " ",db_password)
+
+                return {"userid": user_id, "username": email, "isadmin": isadmin}
+        else:
                 return None  # Password is incorrect
         return None  # User not found
 
@@ -124,33 +139,66 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 @app.post("/login")
 async def login(request: Request):
+    
     db = SessionLocal()
 
     form = await request.form()
     email = form.get("email")
+    print(email)
+ 
     password = form.get("password")
-    
+    print(password)
     user = authenticate_user(db, email, password)
+    print(user)
     db.close()
 
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    print("153")
+
     # Store user ID in session
+ 
     request.session['user_id'] = user['userid']
+    request.session['is_admin'] = user['isadmin']
+    print("Session data set:", request.session.get('user_id'), request.session.get('is_admin'))
+
+    
+
+    print("157")
+
     db = SessionLocal()
     try:
         result = db.execute(text("SELECT * FROM employee WHERE email = :email and isadmin = True"), {"email": email}).fetchone()
         if result:
-                return RedirectResponse(url="/adminHome", status_code=302)
+                print("157")
+                response = RedirectResponse(url="http://localhost:3000/admin" if user['isadmin'] else "http://localhost:3000/emp", status_code=302)
+                response.set_cookie("session_id", request.session, secure=True, httponly=True)                
+                return response
+                # return RedirectResponse(url="http://localhost:3000/admin", status_code=302)
 
-        return RedirectResponse(url="/empHome", status_code=302)
-
+        print("157")
+        response = RedirectResponse(url="http://localhost:3000/emp" if user['isadmin'] else "http://localhost:3000/emp", status_code=302)
+        response.set_cookie("session_id", request.session, secure=True, httponly=True)        
+        return response
+        # return RedirectResponse(url="http://localhost:3000/emp", status_code=302)
     finally:
         db.close()
 
 
 
+@app.get("/session")
+# async def get_session(request: Request):
+#     user_id = request.session.get("user_id")
+#     is_admin = request.session.get("is_admin")
+#     print(user_id,is_admin)
+#     return {"user_id": user_id, "is_admin": is_admin}
+async def get_session(request: Request):
+    user_id = request.session.get("user_id")
+    is_admin = request.session.get("is_admin")
+    response = JSONResponse(content={"user_id": user_id, "is_admin": is_admin}, status_code=200)
+    response.set_cookie("session_id", request.session, secure=True, httponly=True)
+    return response
 
 @app.post("/add_nominee")
 async def add_nominee(name: str):
