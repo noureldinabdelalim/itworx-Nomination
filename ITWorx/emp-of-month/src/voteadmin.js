@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios"; // If using axios
+import { useEffect, useState } from "react";
 import NavAdmin from "./components/navadmin";
 import SideNavAdmin from "./components/sidenavadmin";
 
@@ -16,34 +15,56 @@ export default function VoteAdmin() {
 
   useEffect(() => {
     document.title = "itworx | Vote";
-  
-    const fetchResults = async () => {
+
+    // Fetch the nominees data from the API
+    const fetchNominees = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/view_results");
-        console.log("API Response:", response.data); // Log the response
-  
-        if (response.data.nominees) {
-          setNominees(response.data.nominees);
-          console.log("Nominees:", response.data.nominees); // Log the nominees
+        const response = await fetch("http://localhost:8000/vote");
+        if (!response.ok) {
+          throw new Error("Failed to fetch nominees");
+        }
+        const data = await response.json();
+        if (data.nominees) {
+          setNominees(data.nominees);
         } else {
           console.error("No nominees data found in the response");
         }
       } catch (error) {
-        console.error("Error fetching results:", error);
+        console.error("Error fetching nominees:", error);
       }
     };
-  
-    fetchResults();
+
+    fetchNominees();
   }, []);
 
-  const handleVote = (id) => {
-    setNominees(prevNominees =>
-      prevNominees.map(nominee =>
-        nominee.id === id
-          ? { ...nominee, votes: nominee.votes + 1 }
-          : nominee
-      )
-    );
+  const handleVote = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8000/vote/${id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Include cookies in the request (for session-based authentication)
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit vote");
+      }
+
+      const data = await response.json();
+      console.log("Vote Response:", data);
+
+      // Update the nominee's vote count in the UI
+      setNominees(prevNominees =>
+        prevNominees.map(nominee =>
+          nominee.id === id
+            ? { ...nominee, votes: nominee.votes + 1 }
+            : nominee
+        )
+      );
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    }
   };
 
   return (
@@ -80,7 +101,13 @@ export default function VoteAdmin() {
                           <h5 className="mb-1">{nominee.name}</h5>
                           <p className="mb-0">Votes: {nominee.votes}</p>
                         </div>
-                        <button type="button" className="btn btn-light" onClick={() => handleVote(nominee.id)}>Vote</button>
+                        <button
+                          type="button"
+                          className="btn btn-light"
+                          onClick={() => handleVote(nominee.id)}
+                        >
+                          Vote
+                        </button>
                       </div>
                     </li>
                   ))

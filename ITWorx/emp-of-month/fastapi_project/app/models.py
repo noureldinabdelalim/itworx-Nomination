@@ -80,6 +80,11 @@ employee2 = Employee(
 session.add(employee2)
 session.commit()
 session.close()
+from pydantic import BaseModel, EmailStr
 
+class addnominee(BaseModel):
+    email: EmailStr
+    name: str
+    reason: str
 
 

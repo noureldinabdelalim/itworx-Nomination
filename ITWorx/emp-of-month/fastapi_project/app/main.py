@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 from datetime import timedelta
 from datetime import datetime
+from models import * 
 
 
 # app = FastAPI()
@@ -158,48 +159,11 @@ async def get_user_by_email(email: str):
 
 # except Exception as e:
 #      print(f"Error: {str(e)}")
-try:
-        # Fetch the results and nominees with mappings to get dictionaries directly
-        results = db.execute(text("SELECT * FROM resultofmonth")).mappings().all()
-        nominees_list = db.execute(text("SELECT * FROM nominations")).mappings().all()
-
-        if results or nominees_list:
-            return JSONResponse(content={"results": results, "nominees": nominees_list}, status_code=200)
-        else:
-            raise HTTPException(status_code=404, detail="No results or nominees found")
-except Exception as e:
-        print(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="An error occurred while retrieving results")
-finally:
-        db.dispose()
+db=SessionLocal()
 
 
 
 
-try:
-    # Execute the query to get all results
-    result = db.execute(
-        text("""
-            SELECT * 
-            FROM resultofmonth 
-        """)
-    ).fetchall()
-
-    if result:
-        # Convert result to a list of dictionaries
-        results = [
-            {key: value for key, value in row.items()} 
-            for row in result
-        ]
-        print(results)
-    else:
-        raise HTTPException(status_code=404, detail="No results found")
-except Exception as e:
-    # Print the error for debugging purposes
-    print(f"Error: {e}")
-    raise HTTPException(status_code=500, detail="An error occurred while retrieving results")
-finally:
-    db.close()
 # Define the create_access_token function
 async def create_access_token(data: dict, expires_delta: timedelta):
     # Implement the logic to create an access token for the user
@@ -273,20 +237,20 @@ async def get_session(request: Request):
     return response
 
 @app.post("/add_nominee")
-async def add_nominee(name: str , numberofvotes):
+async def add_nominee(addnominee: addnominee):
     db = SessionLocal()
     try:
         
         existing_nominee = db.execute(
-    text("SELECT * FROM nominations WHERE nomineemail = :email"),{"email": email}).fetchone()
+    text("SELECT * FROM nominations WHERE nomineemail = :email"),{"email": addnominee.email}).fetchone()
         if existing_nominee:
              raise HTTPException(status_code=400, detail="Nominee already exists")
 
         
-        db.execute(text("INSERT INTO nominations (nomineemail,reason,month) VALUES (:email,:reason,:month)"), {"email": email,"reason":reason, "month":current_month})
+        db.execute(text("INSERT INTO nominations (nomineemail,reason,month) VALUES (:email,:reason,:month)"), {"email": addnominee.email,"reason":reason, "month":current_month})
         db.commit()
 
-        user = db.execute(text("SELECT userid FROM public.employee WHERE name = :name"), {"name": name}).fetchone()
+        user = db.execute(text("SELECT userid FROM public.employee WHERE name = :name"), {"name": addnominee.name}).fetchone()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
@@ -294,8 +258,8 @@ async def add_nominee(name: str , numberofvotes):
         user_id = user.userid
         current_month = datetime.now().month
         voted_id = f"{user_id}-{current_month}-{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
-        db.execute(text("INSERT INTO votings (votedid, month, numberofvotes) VALUES (:votedid, :month, :numberofvotes)"),
-                   {"votedid": voted_id, "month": current_month, "numberofvotes": numberofvotes})
+        db.execute(text("INSERT INTO votings (votedid, month) VALUES (:votedid, :month)"),
+                   {"votedid": voted_id, "month": current_month})
         db.commit()
     except Exception as e:
         db.rollback()
@@ -380,16 +344,14 @@ def get_db():
 
 @app.get("/view_results")
 async def view_results():
+    db = SessionLocal()
     try:
-        # Fetching data from the database
-        result = db.execute(text("SELECT * FROM resultofmonth")).fetchall()
-        nominees = db.execute(text("SELECT * FROM nominations")).fetchall()
+        # Fetch the results and nominees with mappings to get dictionaries directly
+        results = db.execute(text("SELECT * FROM resultofmonth")).mappings().all()
+        nominees_list = db.execute(text("SELECT * FROM nominations")).mappings().all()
 
-        if result or nominees:
-            # Convert the data to the appropriate format
-            results = [dict(row) for row in result]
-            nominees_list = [dict(row) for row in nominees]
-            return JSONResponse(content={"results": results, "nominees": nominees_list}, status_code=200)
+        if results or nominees_list:
+            return JSONResponse(content={"nominees": nominees_list}, status_code=200)
         else:
             raise HTTPException(status_code=404, detail="No results or nominees found")
     except Exception as e:
@@ -397,6 +359,7 @@ async def view_results():
         raise HTTPException(status_code=500, detail="An error occurred while retrieving results")
     finally:
         db.close()
+
 @app.put("/vote/{id}")
 async def vote(id: int, request: Request, db: Session = Depends(get_db) ):
     # Get the voter's ID from the session
