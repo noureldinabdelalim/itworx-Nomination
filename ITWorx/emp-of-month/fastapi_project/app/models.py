@@ -64,23 +64,27 @@ class Nominations(Base):
 
 
 
-engine = create_engine("postgresql+psycopg2://postgres:Plm%21%40123@localhost:5432/empdatabase")
+engine = create_engine("postgresql://user:user@localhost:5432/postgres")
 
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
-employee1 = Employee(
-    email="john.doe@example.com",
-    password="securepassword",
-    name="John Doe",
+employee2 = Employee(
+ email="aaaaa",
+    password="securepaassword",
+    name="mohamedsherif",
     isadmin=True,
     voted=False,
-    nominations=3
-)
-session.add(employee1)
+    nominations=3)
+session.add(employee2)
 session.commit()
 session.close()
+from pydantic import BaseModel, EmailStr
 
+class addnominee(BaseModel):
+    email: EmailStr
+    name: str
+    reason: str
 
 

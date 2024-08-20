@@ -19,14 +19,77 @@ import Nav from './components/nav';
 function Login() {
 
   const [formData, setFormData] = React.useState({
-		username: "",
+		email: "",
 		password: "",
 	});
 
   const handleInputChange = (e) => {
-		const { name, value } = e.target;
-		setFormData({ ...formData, [name]: value });
-	};
+    const { name, value } = e.target;
+    let updatedValue = value;
+
+    if (name === 'email') {
+        updatedValue = value.trim(); // Remove leading and trailing whitespace characters
+    }
+
+    setFormData({ ...formData, [name]: updatedValue });
+};
+
+  // const handleLogin = async () => {
+  //   try {
+  //     // Add your API call or authentication logic here
+  //     console.log('Form data:', formData);
+  //     // Example: const response = await fetch('/api/login', { method: 'POST', body: JSON.stringify(formData) });
+  //   } catch (error) {
+  //     console.error('Login failed:', error);
+  //   }
+  // };
+  const handleLogin = async () => {
+    console.log('handleLogin called');
+
+    // setFormData({[email]:formData.email.trim})
+    // setFormData({[email]:formData.email + '@itworx.com'})
+    try {
+      const response = await fetch('http://localhost:8000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+        console.log(formData.email, " ",formData.password)
+        const response2 = await fetch('http://localhost:8000/session', {
+          method: 'GET',
+          credentials: 'include', // Include cookies in the request
+        });
+        const sessionData = await response2.json();
+        console.log(sessionData);
+        if (response.ok) {
+          if (!sessionData.isadmin) {
+            // Handle successful login, e.g., redirect to another page
+            window.location.href = '/emp';
+            console.log(sessionData);
+
+        } 
+           else {
+            window.location.href = '/admin';
+
+            console.log(sessionData);
+
+
+           }
+        } else {
+            // Handle login failure, e.g., show an error message
+            console.error('Login failed:', response);
+            alert('Invalid login credentials');
+        }
+    } catch (error) {
+        console.error('Login failed:', error);
+        alert('Login failed. Please try again.');
+    }
+};
 
   const handleSubmit = (event) => {
 		event.preventDefault();
@@ -35,9 +98,7 @@ function Login() {
 	};
 
 
-  const handleLogin = async () => {
-
-  };
+  
 
   return (
     <>
@@ -80,14 +141,14 @@ function Login() {
                       </div>
                       <p>Please login to your account</p>
                       <MDBInputGroup className="mb-3">
-  <MDBInput type="text" id="form1" placeholder="Email address" aria-label="Email address" aria-describedby="basic-addon2" value={formData.username}
+  <MDBInput type="text" id="form1" placeholder="Email address" name="email" aria-label="Email address" aria-describedby="basic-addon2" value={formData.email}
 									onChange={handleInputChange}/>
   <span className="input-group-text" >@itworx.com</span>
 </MDBInputGroup>
-                    <MDBInput wrapperClass='mb-4' placeholder="Password" id='form2' type='password' onChange={handleInputChange}
+                    <MDBInput wrapperClass='mb-4' placeholder="Password" name="password" id='form2' type='password' onChange={handleInputChange}
 									value={formData.password}/>
                       <div className="text-center pt-1 mb-5 pb-1">
-                        <MDBBtn className="mb-4 w-100" style={{ maxHeight: '40px' }}>Sign in</MDBBtn>
+                        <MDBBtn className="mb-4 w-100" style={{ maxHeight: '40px' }} onClick={handleSubmit}>Sign in</MDBBtn>
                         <a className="text-muted" href="#!">Forgot password?</a>
                       </div>
                       <div className="d-flex flex-row align-items-center justify-content-center pb-4 mb-4">
